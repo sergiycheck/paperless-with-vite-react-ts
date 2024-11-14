@@ -6,10 +6,6 @@ import { FileIcon } from "@radix-ui/react-icons";
 import { Textarea } from "./components/ui/textarea";
 import { z } from "zod";
 
-function convertFileWithPathToBlob(fileWithPath: FileWithPath) {
-  return new Blob([fileWithPath], { type: fileWithPath.type });
-}
-
 const baseUrl = "http://localhost:8000/api";
 const token = "cGFwZXJsZXNzOnBhcGVybGVzcw==";
 
@@ -58,10 +54,23 @@ const documentSchema = z.object({
 type DocumentType = z.infer<typeof documentSchema>;
 
 export default function Component() {
-  const [acceptedFile, setAcceptedFile] = React.useState<FileWithPath | null>(null);
+  const [acceptedBlobFile, setAcceptedBlobFile] = React.useState<Blob | null>(null);
+  const [acceptedFile, setAcceptedFile] = React.useState<File | null>(null);
 
   const onDrop = React.useCallback((acceptedFiles: FileWithPath[]) => {
-    setAcceptedFile(acceptedFiles[0]);
+    acceptedFiles.forEach((file) => {
+      const reader = new FileReader();
+
+      reader.onabort = () => console.log("file reading was aborted");
+      reader.onerror = () => console.log("file reading has failed");
+      reader.onload = () => {
+        const binaryStr = reader.result;
+        const blobFile = new Blob([new Uint8Array(binaryStr as ArrayBuffer)], { type: file.type });
+        setAcceptedBlobFile(blobFile);
+        setAcceptedFile(file);
+      };
+      reader.readAsArrayBuffer(file);
+    });
   }, []);
 
   const { getRootProps, getInputProps, acceptedFiles } = useDropzone({ onDrop });
@@ -69,12 +78,11 @@ export default function Component() {
   const [taskId, setTaskId] = React.useState<string | null>("");
 
   const uploadDocument = async () => {
-    const acceptedFile = acceptedFiles[0];
-    const fileBlob = convertFileWithPathToBlob(acceptedFile);
+    if (!acceptedBlobFile) return;
 
     const formData = new FormData();
     formData.append("title", "document 1");
-    formData.append("document", fileBlob);
+    formData.append("document", acceptedBlobFile);
 
     try {
       const response = await fetch(baseUrl + "/documents/post_document/", {
