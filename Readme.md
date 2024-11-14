@@ -1,4 +1,8 @@
-# How to start
+# Important Note
+
+A lot of things were simplified for the sake of time, such as the lack of error handling, the lack of proper testing, and the lack of proper documentation. This is not a **production-ready codebase, but rather a proof of concept**.
+
+## How to start
 
 1. Follow instructions to setup paperless in docker [here](https://docs.paperless-ngx.com/setup/)
 2. Add environment variables in docker-compose.env file to enable remote user api and allow CORS

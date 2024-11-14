@@ -4,54 +4,11 @@ import { FileWithPath, useDropzone } from "react-dropzone";
 import React from "react";
 import { FileIcon } from "@radix-ui/react-icons";
 import { Textarea } from "./components/ui/textarea";
-import { z } from "zod";
+import { CloudUploadIcon } from "./components/generic/cloud-svg-icon";
+import { documentSchema, taskSchema, TaskType, DocumentType } from "./types";
 
-const baseUrl = "http://localhost:8000/api";
+const baseUrl = import.meta.env.VITE_PUBLIC_BASE_URL;
 const token = "cGFwZXJsZXNzOnBhcGVybGVzcw==";
-
-const taskSchema = z.object({
-  id: z.number(),
-  task_id: z.string().uuid(),
-  task_file_name: z.string(),
-  date_created: z.string(),
-  date_done: z.string(),
-  type: z.enum(["file"]),
-  status: z.enum(["SUCCESS", "FAILURE", "PENDING"]),
-  result: z.string(),
-  acknowledged: z.boolean(),
-  related_document: z.string(),
-});
-
-type TaskType = z.infer<typeof taskSchema>;
-
-const documentSchema = z.object({
-  id: z.number(),
-  title: z.string().optional(),
-  content: z.string(),
-  tags: z.array(z.number().optional()).default([]).optional(),
-  document_type: z.string().nullable().optional(),
-  correspondent: z.string().nullable().optional(),
-  created: z.string().optional(),
-  created_date: z.string().optional(),
-  modified: z.string().optional(),
-  added: z.string().optional(),
-  archive_serial_number: z.string().nullable(),
-  original_file_name: z.string().optional(),
-  archived_file_name: z.string().nullable().optional(),
-  notes: z.array(z.string().optional()).default([]).optional(),
-  page_count: z.number().int().nonnegative().nullable(),
-  set_permissions: z.boolean().optional(),
-  custom_fields: z
-    .array(
-      z.object({
-        field: z.number().int().nonnegative(),
-        value: z.any(),
-      })
-    )
-    .default([]),
-});
-
-type DocumentType = z.infer<typeof documentSchema>;
 
 export default function Component() {
   const [acceptedBlobFile, setAcceptedBlobFile] = React.useState<Blob | null>(null);
@@ -241,26 +198,5 @@ export default function Component() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function CloudUploadIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
-      <path d="M12 12v9" />
-      <path d="m16 16-4-4-4 4" />
-    </svg>
   );
 }
